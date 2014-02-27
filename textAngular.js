@@ -271,7 +271,6 @@ textAngular.directive("textAngular", ['$compile', '$window', '$document', '$root
 				scope.displayElements.forminput.attr('name', attrs.name);
 				element.append(scope.displayElements.forminput);
 			}
-			
 			if(!!attrs.taDisabled){
 				scope.displayElements.text.attr('ta-readonly', 'disabled');
 				scope.displayElements.html.attr('ta-readonly', 'disabled');
@@ -515,6 +514,51 @@ textAngular.directive("textAngular", ['$compile', '$window', '$document', '$root
 					isReadonly = newVal;
 				});
 			}
+
+            //drag and drop image functionality
+            (function () {
+
+                //function for preventing default browser actions on file drop
+                var processDragOverOrEnter = function(event) {
+                    if (event != null) event.preventDefault();
+                    event.dataTransfer.effectAllowed = 'copy';
+                };
+
+                //check against valid MIME types
+                var validMimeTypes = ['image/gif','image/jpeg','image/png'];
+
+                var isTypeValid = function(type) {
+                    if ((validMimeTypes === (void 0) || validMimeTypes === '') || validMimeTypes.indexOf(type) > -1) {
+                        return true;
+                    } else {
+                        alert("Invalid file type.  File must be one of following types " + validMimeTypes);
+                        return false;
+                    }
+                };
+
+                element.bind('dragover', processDragOverOrEnter);
+                element.bind('dragenter', processDragOverOrEnter);
+
+                //execute on file drop event
+                element.bind('drop', function(event) {
+                    if (event != null) {
+                        event.preventDefault();
+                    }
+                    var reader = new FileReader();
+
+                    //set behavior for FileReader once file has been read
+                    reader.onloadend = function () {
+                        scope.$parent.wrapSelection('insertImage', reader.result);
+                    };
+
+                    var file = event.dataTransfer.files[0];
+
+                    if (isTypeValid(file.type)) {
+                        reader.readAsDataURL(file);
+                    }
+                });
+            })();
+
 		}
 	};
 }]).factory('taFixChrome', function(){
